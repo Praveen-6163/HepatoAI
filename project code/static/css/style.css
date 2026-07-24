@@ -1557,3 +1557,46 @@ a:hover {
     width: 100%;
   }
 }
+
+/* --- Google login additions --- */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 20px 0;
+  color: var(--text-muted);
+}
+.auth-divider::before,
+.auth-divider::after {
+  content: '';
+  flex: 1;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+.auth-divider:not(:empty)::before {
+  margin-right: .5em;
+}
+.auth-divider:not(:empty)::after {
+  margin-left: .5em;
+}
+.auth-divider span {
+  font-size: 13px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.google-btn {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+  color: var(--text-primary);
+  font-weight: 500;
+  gap: 12px;
+}
+.google-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.05);
+}
+.google-logo {
+  flex-shrink: 0;
+}
+
