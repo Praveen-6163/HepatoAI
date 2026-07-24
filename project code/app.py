@@ -12,7 +12,19 @@ app = Flask(__name__)
 app.secret_key = "liver_cirrhosis_diagnostic_secret_key_12948"
 
 # Database Configuration
-db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cirrhosis.db")
+if os.environ.get("VERCEL"):
+    db_path = "/tmp/cirrhosis.db"
+    original_db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cirrhosis.db")
+    if not os.path.exists(db_path) and os.path.exists(original_db_path):
+        import shutil
+        try:
+            shutil.copy2(original_db_path, db_path)
+            os.chmod(db_path, 0o666)
+        except Exception as e:
+            print("Failed to copy SQLite database:", e)
+else:
+    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cirrhosis.db")
+
 app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
