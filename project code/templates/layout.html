@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Liver Cirrhosis Predictor{% endblock %}</title>
+  <!-- SEO Meta Tags -->
+  <meta name="description" content="Advanced machine learning tool for predicting liver cirrhosis based on clinical and laboratory values. Fully secure, interactive dashboard.">
+  <meta name="keywords" content="liver cirrhosis, machine learning, clinical diagnostics, hepatology, predictions">
+  <meta name="author" content="Praveen Medida">
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+  
+  <div class="app-container">
+    {% if session.get('user_id') %}
+    <!-- Sidebar Navigation -->
+    <aside class="app-sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <div class="brand">
+          <svg class="brand-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4.5 16.5c-1.5 1.26-2.5 3.19-2.5 5.5h20c0-2.31-1-4.24-2.5-5.5"/>
+            <path d="M12 2C6.5 2 2 6.5 2 12c0 2.31 1 4.24 2.5 5.5l1.5-1.5C5.4 15.1 5 13.6 5 12c0-3.9 3.1-7 7-7s7 3.1 7 7c0 1.6-.4 3.1-1 4l1.5 1.5c1.5-1.26 2.5-3.19 2.5-5.5 0-5.5-4.5-10-10-10z"/>
+            <path d="M12 9c-1.7 0-3 1.3-3 3 0 .8.3 1.5.8 2l1.4-1.4c-.1-.2-.2-.4-.2-.6 0-.6.4-1 1-1s1 .4 1 1c0 .2-.1.4-.2.6l1.4 1.4c.5-.5.8-1.2.8-2 0-1.7-1.3-3-3-3z"/>
+          </svg>
+          <span class="brand-text">HepatoAI</span>
+        </div>
+        <button class="sidebar-close" id="sidebarCloseBtn" aria-label="Close Sidebar">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+      
+      <div class="clinician-profile">
+        <div class="profile-avatar">
+          {{ session.get('username', 'C')[0]|upper }}
+        </div>
+        <div class="profile-info">
+          <p class="profile-role">Clinician Account</p>
+          <h4 class="profile-name">{{ session.get('username') }}</h4>
+        </div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <a href="{{ url_for('dashboard') }}" class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon"><rect x="3" y="3" width="7" height="9"></rect><rect x="14" y="3" width="7" height="5"></rect><rect x="14" y="12" width="7" height="9"></rect><rect x="3" y="16" width="7" height="5"></rect></svg>
+          Dashboard
+        </a>
+        <a href="{{ url_for('predict') }}" class="nav-link {% if request.endpoint == 'predict' %}active{% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon"><path d="M22 12h-4l-3 9L9 3l-3 9H2"></path></svg>
+          Run Analysis
+        </a>
+        <a href="{{ url_for('history') }}" class="nav-link {% if request.endpoint == 'history' or request.endpoint == 'result' %}active{% endif %}">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+          Patient Logs
+        </a>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <a href="{{ url_for('logout') }}" class="logout-btn">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="nav-icon"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          Sign Out
+        </a>
+      </div>
+    </aside>
+    {% endif %}
+
+    <!-- Main Content Area -->
+    <main class="app-main-content">
+      {% if session.get('user_id') %}
+      <!-- Header Bar for logged in users -->
+      <header class="app-header">
+        <button class="mobile-toggle" id="mobileToggleBtn" aria-label="Open Navigation">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+        <div class="header-title-wrapper">
+          <span class="header-subtitle">Diagnostic Decision Support</span>
+          <h1 class="header-title">{% block header_title %}Overview{% endblock %}</h1>
+        </div>
+        <div class="header-actions">
+          <span class="date-badge" id="currentDateBadge">July 24, 2026</span>
+        </div>
+      </header>
+      {% endif %}
+
+      <div class="content-wrapper">
+        <!-- Flash Alert Notifications -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="alert-container">
+              {% for category, message in messages %}
+                <div class="alert alert-{{ category }}" role="alert">
+                  <span class="alert-msg">{{ message }}</span>
+                  <button class="alert-dismiss-btn" onclick="this.parentElement.style.display='none';">&times;</button>
+                </div>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+
+        <!-- Actual Page Content -->
+        {% block content %}{% endblock %}
+      </div>
+    </main>
+  </div>
+
+  <!-- Main JavaScript File -->
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

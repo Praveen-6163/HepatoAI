@@ -1,0 +1,130 @@
+{% extends "layout.html" %}
+
+{% block title %}Patient Analysis - HepatoAI{% endblock %}
+{% block header_title %}Run Diagnostics{% endblock %}
+
+{% block content %}
+<div class="analysis-page-layout">
+  <div class="form-panel-wrapper">
+    <div class="analysis-card">
+      <div class="analysis-card-header">
+        <h2>Diagnostic Assessment Form</h2>
+        <p>Enter patient biological indicators exactly from the laboratory reports.</p>
+      </div>
+
+      <form action="{{ url_for('predict') }}" method="POST" class="diagnostic-form" id="predictForm">
+        <!-- Section 1: Demographics -->
+        <h4 class="form-section-title">1. Patient Information</h4>
+        <div class="form-row-2">
+          <div class="form-group-floating">
+            <input type="text" id="patient_name" name="patient_name" placeholder="Patient Full Name" required>
+            <label for="patient_name">Patient Full Name / ID</label>
+          </div>
+          <div class="form-row-sub">
+            <div class="form-group-floating">
+              <input type="number" id="Age" name="Age" placeholder="Age" min="1" max="120" required>
+              <label for="Age">Age (Years)</label>
+            </div>
+            <div class="form-group-select">
+              <select id="Gender" name="Gender" required>
+                <option value="" disabled selected>Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+              </select>
+              <span class="select-arrow"></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 2: Bilirubin and Phosphotase -->
+        <h4 class="form-section-title">2. Bilirubin & Alkaline Enzymes</h4>
+        <div class="form-row-3">
+          <div class="form-group-floating">
+            <input type="number" step="0.01" id="Total_Bilirubin" name="Total_Bilirubin" placeholder="Total Bilirubin" required>
+            <label for="Total_Bilirubin">Total Bilirubin (mg/dL)</label>
+            <span class="help-text">Normal: 0.1 - 1.2 mg/dL</span>
+          </div>
+          <div class="form-group-floating">
+            <input type="number" step="0.01" id="Direct_Bilirubin" name="Direct_Bilirubin" placeholder="Direct Bilirubin" required>
+            <label for="Direct_Bilirubin">Direct Bilirubin (mg/dL)</label>
+            <span class="help-text">Normal: 0.0 - 0.3 mg/dL</span>
+          </div>
+          <div class="form-group-floating">
+            <input type="number" id="Alkaline_Phosphotase" name="Alkaline_Phosphotase" placeholder="Alk Phosphatase" required>
+            <label for="Alkaline_Phosphotase">Alkaline Phosphotase (IU/L)</label>
+            <span class="help-text">Normal: 44 - 147 IU/L</span>
+          </div>
+        </div>
+
+        <!-- Section 3: Enzymes AST & ALT -->
+        <h4 class="form-section-title">3. Aminotransferase Enzymes (Transaminases)</h4>
+        <div class="form-row-2">
+          <div class="form-group-floating">
+            <input type="number" id="Alamine_Aminotransferase" name="Alamine_Aminotransferase" placeholder="ALT" required>
+            <label for="Alamine_Aminotransferase">Alamine Aminotransferase - ALT (IU/L)</label>
+            <span class="help-text">Normal: 7 - 56 IU/L</span>
+          </div>
+          <div class="form-group-floating">
+            <input type="number" id="Aspartate_Aminotransferase" name="Aspartate_Aminotransferase" placeholder="AST" required>
+            <label for="Aspartate_Aminotransferase">Aspartate Aminotransferase - AST (IU/L)</label>
+            <span class="help-text">Normal: 10 - 40 IU/L</span>
+          </div>
+        </div>
+
+        <!-- Section 4: Proteins -->
+        <h4 class="form-section-title">4. Synthetic Protein Panel</h4>
+        <div class="form-row-3">
+          <div class="form-group-floating">
+            <input type="number" step="0.01" id="Total_Proteins" name="Total_Proteins" placeholder="Total Proteins" required>
+            <label for="Total_Proteins">Total Proteins (g/dL)</label>
+            <span class="help-text">Normal: 6.0 - 8.3 g/dL</span>
+          </div>
+          <div class="form-group-floating">
+            <input type="number" step="0.01" id="Albumin" name="Albumin" placeholder="Albumin" required>
+            <label for="Albumin">Albumin (g/dL)</label>
+            <span class="help-text">Normal: 3.5 - 5.0 g/dL</span>
+          </div>
+          <div class="form-group-floating">
+            <input type="number" step="0.01" id="Albumin_and_Globulin_Ratio" name="Albumin_and_Globulin_Ratio" placeholder="A/G Ratio" required>
+            <label for="Albumin_and_Globulin_Ratio">A/G Ratio</label>
+            <span class="help-text">Normal: 1.0 - 2.0</span>
+          </div>
+        </div>
+
+        <div class="form-actions">
+          <button type="reset" class="btn btn-secondary btn-lg">Clear All Fields</button>
+          <button type="submit" class="btn btn-primary btn-lg glow-effect">
+            Run ML Analysis
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 16 16 12 12 8"></polyline><line x1="8" y1="12" x2="16" y2="12"></line></svg>
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Reference Sidebar -->
+  <aside class="analysis-reference-sidebar">
+    <div class="reference-card">
+      <h4>Parameters Explained</h4>
+      <div class="reference-guide-scroll">
+        <div class="ref-guide-item">
+          <h5>Total & Direct Bilirubin</h5>
+          <p>Bilirubin is created by breakdown of red blood cells. High levels indicate liver dysfunction or bile duct blockage.</p>
+        </div>
+        <div class="ref-guide-item">
+          <h5>Alkaline Phosphatase (ALP)</h5>
+          <p>An enzyme related to bile ducts. High levels indicate blocked ducts or bone problems.</p>
+        </div>
+        <div class="ref-guide-item">
+          <h5>ALT & AST</h5>
+          <p>Intracellular enzymes. High concentrations indicate liver injury (hepatitis, toxins, cirrhosis).</p>
+        </div>
+        <div class="ref-guide-item">
+          <h5>Albumin & Total Protein</h5>
+          <p>Synthesized solely by liver. Lower levels indicate loss of liver synthetic tissue capacity (cirrhosis indicator).</p>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+{% endblock %}

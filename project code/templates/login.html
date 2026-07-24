@@ -1,0 +1,65 @@
+{% extends "layout.html" %}
+
+{% block title %}Sign In - HepatoAI{% endblock %}
+
+{% block content %}
+<div class="auth-page-container">
+  <div class="auth-branding-intro">
+    <div class="auth-brand-logo">
+      <svg class="brand-large-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M4.5 16.5c-1.5 1.26-2.5 3.19-2.5 5.5h20c0-2.31-1-4.24-2.5-5.5"/>
+        <path d="M12 2C6.5 2 2 6.5 2 12c0 2.31 1 4.24 2.5 5.5l1.5-1.5C5.4 15.1 5 13.6 5 12c0-3.9 3.1-7 7-7s7 3.1 7 7c0 1.6-.4 3.1-1 4l1.5 1.5c1.5-1.26 2.5-3.19 2.5-5.5 0-5.5-4.5-10-10-10z"/>
+        <path d="M12 9c-1.7 0-3 1.3-3 3 0 .8.3 1.5.8 2l1.4-1.4c-.1-.2-.2-.4-.2-.6 0-.6.4-1 1-1s1 .4 1 1c0 .2-.1.4-.2.6l1.4 1.4c.5-.5.8-1.2.8-2 0-1.7-1.3-3-3-3z"/>
+      </svg>
+      <h1>HepatoAI</h1>
+    </div>
+    <p class="auth-tagline">Clinical Decision Support for Liver Cirrhosis Prediction</p>
+    <div class="auth-feature-bullets">
+      <div class="feature-bullet">
+        <div class="bullet-icon">✓</div>
+        <div class="bullet-text">
+          <h5>Random Forest Model</h5>
+          <p>Trained on clinical datasets to predict cirrhosis risk based on patient attributes.</p>
+        </div>
+      </div>
+      <div class="feature-bullet">
+        <div class="bullet-icon">✓</div>
+        <div class="bullet-text">
+          <h5>Secure Patient Logs</h5>
+          <p>Store, filter, and review histories securely per clinician.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-card-wrapper">
+    <div class="auth-card">
+      <div class="auth-card-header">
+        <h2>Clinician Sign In</h2>
+        <p>Access your liver disease analysis portal</p>
+      </div>
+
+      <form action="{{ url_for('login') }}" method="POST" class="auth-form" id="loginForm">
+        <div class="form-group-floating">
+          <input type="text" id="username" name="username" placeholder="Username" required autofocus>
+          <label for="username">Username</label>
+        </div>
+
+        <div class="form-group-floating">
+          <input type="password" id="password" name="password" placeholder="Password" required>
+          <label for="password">Password</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-block btn-lg glow-effect">
+          Authenticate
+          <svg class="btn-arrow" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </button>
+      </form>
+
+      <div class="auth-card-footer">
+        <p>New to HepatoAI? <a href="{{ url_for('register') }}">Create an Account</a></p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

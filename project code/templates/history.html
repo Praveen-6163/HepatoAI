@@ -1,0 +1,103 @@
+{% extends "layout.html" %}
+
+{% block title %}Patient History - HepatoAI{% endblock %}
+{% block header_title %}Patient Logs{% endblock %}
+
+{% block content %}
+<div class="history-page-wrapper">
+  <!-- Search and Filter Bar -->
+  <div class="filters-bar">
+    <form action="{{ url_for('history') }}" method="GET" class="filter-form">
+      <div class="search-input-group">
+        <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+        <input type="text" name="search" placeholder="Search patient name..." value="{{ search }}">
+      </div>
+      
+      <div class="filter-select-group">
+        <select name="risk" onchange="this.form.submit();">
+          <option value="" {% if not risk_filter %}selected{% endif %}>All Diagnostic Verdicts</option>
+          <option value="cirrhosis" {% if risk_filter == 'cirrhosis' %}selected{% endif %}>Cirrhosis Cases</option>
+          <option value="healthy" {% if risk_filter == 'healthy' %}selected{% endif %}>Healthy Cases</option>
+        </select>
+        <span class="select-arrow"></span>
+      </div>
+
+      {% if search or risk_filter %}
+      <a href="{{ url_for('history') }}" class="btn btn-secondary btn-sm clear-filters-btn">Clear Filters</a>
+      {% endif %}
+    </form>
+
+    {% if records %}
+    <form action="{{ url_for('clear_history') }}" method="POST" onsubmit="return confirm('WARNING: Are you sure you want to permanently delete all prediction history logs? This cannot be undone.');">
+      <button type="submit" class="btn btn-danger btn-sm">Clear All Logs</button>
+    </form>
+    {% endif %}
+  </div>
+
+  <!-- History Records Table -->
+  <div class="history-table-card">
+    <div class="table-container">
+      {% if records %}
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Date & Time</th>
+            <th>Patient Name</th>
+            <th>Age / Sex</th>
+            <th>Bilirubin</th>
+            <th>Enzymes (ALT/AST)</th>
+            <th>Proteins (Alb/AG)</th>
+            <th>Model Verdict</th>
+            <th>Confidence</th>
+            <th class="text-right">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for r in records %}
+          <tr>
+            <td class="timestamp-cell">{{ r.timestamp.strftime('%d %b %Y, %H:%M') }}</td>
+            <td><strong>{{ r.patient_name }}</strong></td>
+            <td>{{ r.age }} yrs / {{ r.gender }}</td>
+            <td>
+              <span class="metrics-summary">T: {{ r.total_bilirubin }} | D: {{ r.direct_bilirubin }}</span>
+            </td>
+            <td>
+              <span class="metrics-summary">ALT: {{ r.alamine_aminotransferase }} | AST: {{ r.aspartate_aminotransferase }}</span>
+            </td>
+            <td>
+              <span class="metrics-summary">A: {{ r.albumin }} | AG: {{ r.albumin_and_globulin_ratio }}</span>
+            </td>
+            <td>
+              {% if r.prediction_result == 1 %}
+              <span class="badge badge-danger">Cirrhosis</span>
+              {% else %}
+              <span class="badge badge-success">Healthy</span>
+              {% endif %}
+            </td>
+            <td><strong>{{ r.prediction_probability }}%</strong></td>
+            <td class="text-right actions-cell">
+              <a href="{{ url_for('result', record_id=r.id) }}" class="btn-icon-sm btn-view" title="Examine Report">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+              </a>
+              <form action="{{ url_for('delete_record', record_id=r.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Delete patient records for {{ r.patient_name }}?');">
+                <button type="submit" class="btn-icon-sm btn-delete" title="Delete Record">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% else %}
+      <div class="empty-state">
+        <svg class="empty-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+        <h3>No Patient Logs Found</h3>
+        <p>No records match your criteria. Please adjust filters or run a new diagnostic analysis.</p>
+        <a href="{{ url_for('predict') }}" class="btn btn-primary">Start New Analysis</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

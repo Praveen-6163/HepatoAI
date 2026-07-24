@@ -1,0 +1,148 @@
+{% extends "layout.html" %}
+
+{% block title %}Dashboard - HepatoAI{% endblock %}
+{% block header_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="dashboard-grid">
+  <!-- Stats Section -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-value">{{ total }}</div>
+      <div class="stat-label">Total Predictions</div>
+      <div class="stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+      </div>
+    </div>
+    
+    <div class="stat-card healthy">
+      <div class="stat-value">{{ healthy }}</div>
+      <div class="stat-label">Healthy Patients</div>
+      <div class="stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+      </div>
+    </div>
+    
+    <div class="stat-card warning">
+      <div class="stat-value">{{ cirrhosis }}</div>
+      <div class="stat-label">Cirrhosis Detected</div>
+      <div class="stat-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Primary Operations Row -->
+  <div class="actions-row">
+    <div class="action-card-link glow-card">
+      <h3>Diagnose New Patient</h3>
+      <p>Input patient lab report indicators to calculate immediate liver cirrhosis prediction probability.</p>
+      <a href="{{ url_for('predict') }}" class="btn btn-primary">
+        Start New Analysis
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </a>
+    </div>
+
+    <div class="action-card-link outline-card">
+      <h3>Patient History Archives</h3>
+      <p>Search, filter, examine, and manage all your historical patient prediction logs.</p>
+      <a href="{{ url_for('history') }}" class="btn btn-outline">
+        View Patient Logs
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+      </a>
+    </div>
+  </div>
+
+  <!-- Recent Submissions Table & Reference Guides -->
+  <div class="dashboard-panels">
+    <!-- Recent patients -->
+    <div class="dashboard-panel panel-large">
+      <div class="panel-header">
+        <h3>Recent Diagnoses</h3>
+        <a href="{{ url_for('history') }}" class="panel-link">View All</a>
+      </div>
+      <div class="table-container">
+        {% if recent %}
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Patient</th>
+              <th>Age/Sex</th>
+              <th>Bilirubin</th>
+              <th>Albumin</th>
+              <th>Status</th>
+              <th>Confidence</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in recent %}
+            <tr>
+              <td><strong>{{ r.patient_name }}</strong></td>
+              <td>{{ r.age }} / {{ r.gender[0]|upper }}</td>
+              <td>{{ r.total_bilirubin }} mg/dL</td>
+              <td>{{ r.albumin }} g/dL</td>
+              <td>
+                {% if r.prediction_result == 1 %}
+                <span class="badge badge-danger">Cirrhosis</span>
+                {% else %}
+                <span class="badge badge-success">Healthy</span>
+                {% endif %}
+              </td>
+              <td>{{ r.prediction_probability }}%</td>
+              <td>
+                <a href="{{ url_for('result', record_id=r.id) }}" class="btn-icon-sm" title="View Details">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+        {% else %}
+        <div class="empty-state">
+          <p>No recent prediction logs. Run an analysis to populate this board.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Clinical guide -->
+    <div class="dashboard-panel panel-small">
+      <div class="panel-header">
+        <h3>Reference Guide</h3>
+      </div>
+      <div class="clinical-parameters-list">
+        <div class="param-item">
+          <span class="param-bullet red"></span>
+          <div class="param-info">
+            <h5>Bilirubin (Total/Direct)</h5>
+            <p>Elevated levels signal biliary obstruction or liver cell damage.</p>
+          </div>
+        </div>
+        <div class="param-item">
+          <span class="param-bullet blue"></span>
+          <div class="param-info">
+            <h5>AST / ALT Enzymes</h5>
+            <p>Enzymes leaking into the bloodstream indicate liver injury.</p>
+          </div>
+        </div>
+        <div class="param-item">
+          <span class="param-bullet green"></span>
+          <div class="param-info">
+            <h5>Albumin & Proteins</h5>
+            <p>Decreased values indicate synthetic capacity failure of the liver.</p>
+          </div>
+        </div>
+        <div class="param-item">
+          <span class="param-bullet yellow"></span>
+          <div class="param-info">
+            <h5>A/G Ratio</h5>
+            <p>Low ratio suggests advanced chronicity (cirrhosis).</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
