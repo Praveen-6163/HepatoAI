@@ -2,6 +2,8 @@ import os
 import pickle
 import numpy as np
 import pandas as pd
+from dotenv import load_dotenv
+load_dotenv()
 from datetime import datetime
 from functools import wraps
 from flask import Flask, render_template, request, redirect, url_for, flash, session
@@ -15,12 +17,19 @@ app.secret_key = "liver_cirrhosis_diagnostic_secret_key_12948"
 import firebase_admin
 from firebase_admin import credentials, auth
 
+firebase_project_id = os.environ.get("FIREBASE_PROJECT_ID")
+
 try:
     service_account_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "firebase-service-account.json")
     if os.path.exists(service_account_path):
         cred = credentials.Certificate(service_account_path)
         firebase_admin.initialize_app(cred)
         print("Firebase Admin SDK initialized with service account.")
+    elif firebase_project_id:
+        firebase_admin.initialize_app(options={
+            'projectId': firebase_project_id
+        })
+        print(f"Firebase Admin SDK initialized with project ID: {firebase_project_id}")
     else:
         firebase_admin.initialize_app()
         print("Firebase Admin SDK initialized with default credentials.")

@@ -6,3 +6,4 @@ scikit-learn>=1.2.0
 requests>=2.31.0
 gunicorn
 firebase-admin>=6.0.0
+python-dotenv>=1.0.0
