@@ -89,20 +89,30 @@ def inject_firebase_config():
     }
 
 # Database Configuration
-if os.environ.get("VERCEL"):
-    db_path = "/tmp/cirrhosis.db"
-    original_db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cirrhosis.db")
-    if not os.path.exists(db_path) and os.path.exists(original_db_path):
-        import shutil
-        try:
-            shutil.copy2(original_db_path, db_path)
-            os.chmod(db_path, 0o666)
-        except Exception as e:
-            print("Failed to copy SQLite database:", e)
+db_url = os.environ.get("DATABASE_URL")
+if db_url:
+    # SQLAlchemy requires connection URL to start with postgresql:// instead of postgres://
+    if db_url.startswith("postgres://"):
+        db_url = db_url.replace("postgres://", "postgresql://", 1)
+    app.config["SQLALCHEMY_DATABASE_URI"] = db_url
+    print("Database configured with remote database.")
 else:
-    db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cirrhosis.db")
+    if os.environ.get("VERCEL"):
+        db_path = "/tmp/cirrhosis.db"
+        original_db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cirrhosis.db")
+        if not os.path.exists(db_path) and os.path.exists(original_db_path):
+            import shutil
+            try:
+                shutil.copy2(original_db_path, db_path)
+                os.chmod(db_path, 0o666)
+            except Exception as e:
+                print("Failed to copy SQLite database:", e)
+    else:
+        db_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "cirrhosis.db")
 
-app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+    app.config["SQLALCHEMY_DATABASE_URI"] = f"sqlite:///{db_path}"
+    print("Database configured with local SQLite database.")
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 db = SQLAlchemy(app)
