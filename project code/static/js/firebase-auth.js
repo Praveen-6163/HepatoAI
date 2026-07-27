@@ -26,6 +26,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const provider = new firebase.auth.GoogleAuthProvider();
   
   googleBtn.addEventListener("click", () => {
+    // Check if the API key is a placeholder BEFORE trying to launch the popup
+    if (!firebaseConfig || firebaseConfig.apiKey === "placeholder-api-key" || !firebaseConfig.apiKey) {
+      console.log("Triggering local mock Google Login simulation due to placeholder credentials.");
+      simulateMockLogin(googleBtn);
+      return;
+    }
+
     // Show loading state
     googleBtn.disabled = true;
     googleBtn.innerHTML = `
@@ -60,15 +67,8 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch((error) => {
         console.error("Firebase Google Auth Error:", error);
-        
-        // Check if it's a real Firebase project error due to placeholders
-        if (firebaseConfig.apiKey === "placeholder-api-key" || error.code === "auth/invalid-api-key") {
-          console.log("Triggering local mock Google Login simulation due to placeholder credentials.");
-          simulateMockLogin(googleBtn);
-        } else {
-          showAuthError(error.message || "Google Authentication failed.");
-          resetButtonState(googleBtn);
-        }
+        showAuthError(error.message || "Google Authentication failed.");
+        resetButtonState(googleBtn);
       });
   });
 });
