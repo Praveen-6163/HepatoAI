@@ -116,71 +116,341 @@ function setupFallbackMockHandler(btn) {
 
 // Simulates a Google Login locally when Firebase project keys are not yet configured by the user
 function simulateMockLogin(btn) {
-  // Prompt the user for their email address since Firebase keys are not configured yet
-  const userEmail = prompt(
-    "Firebase API keys are not configured.\n\nTo simulate Google Sign-in locally, please enter your email address below:"
-  );
-  
-  if (userEmail === null) {
-    // User cancelled the prompt
-    showAuthError("Google Sign-in was cancelled.");
-    resetButtonState(btn);
-    return;
-  }
-  
-  const trimmedEmail = userEmail.trim();
-  if (!trimmedEmail) {
-    showAuthError("Email address cannot be empty.");
-    resetButtonState(btn);
-    return;
-  }
-  
-  // Basic email pattern check
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-  if (!emailRegex.test(trimmedEmail)) {
-    showAuthError("Please enter a valid email address.");
-    resetButtonState(btn);
-    return;
+  // Inject modal styles if not already present
+  if (!document.getElementById("googleMockModalStyles")) {
+    const styleEl = document.createElement("style");
+    styleEl.id = "googleMockModalStyles";
+    styleEl.innerHTML = `
+      .google-mock-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(9, 12, 21, 0.85);
+        backdrop-filter: blur(8px);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        opacity: 0;
+        transition: opacity 0.25s ease;
+      }
+      .google-mock-modal-overlay.active {
+        opacity: 1;
+      }
+      .google-mock-modal-container {
+        background: #0f1524;
+        border: 1px solid rgba(99, 102, 241, 0.25);
+        box-shadow: 0 8px 32px 0 rgba(99, 102, 241, 0.15);
+        border-radius: 16px;
+        width: 95%;
+        max-width: 480px;
+        padding: 24px;
+        transform: scale(0.9);
+        transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        color: #f8fafc;
+        position: relative;
+        text-align: left;
+      }
+      .google-mock-modal-overlay.active .google-mock-modal-container {
+        transform: scale(1);
+      }
+      .google-mock-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        padding-bottom: 12px;
+      }
+      .google-mock-modal-header h3 {
+        font-family: 'Outfit', sans-serif;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin: 0;
+        color: #f8fafc;
+      }
+      .google-mock-modal-close {
+        background: transparent;
+        border: none;
+        color: #94a3b8;
+        font-size: 1.5rem;
+        cursor: pointer;
+        transition: all 0.2s;
+        line-height: 1;
+      }
+      .google-mock-modal-close:hover {
+        color: #f43f5e;
+      }
+      .google-mock-intro {
+        font-size: 0.9rem;
+        color: #94a3b8;
+        margin-bottom: 20px;
+        line-height: 1.5;
+      }
+      .google-mock-form-group {
+        margin-bottom: 20px;
+      }
+      .google-mock-form-group label {
+        display: block;
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #94a3b8;
+        margin-bottom: 8px;
+        text-align: left;
+      }
+      .google-mock-input {
+        width: 100%;
+        padding: 12px 16px;
+        background: rgba(10, 15, 28, 0.6);
+        border: 1px solid rgba(255,255,255,0.1);
+        border-radius: 8px;
+        color: #f8fafc;
+        font-size: 0.95rem;
+        transition: all 0.2s;
+      }
+      .google-mock-input:focus {
+        outline: none;
+        border-color: #6366f1;
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.25);
+      }
+      .google-mock-action-row {
+        margin-top: 24px;
+      }
+      .google-mock-submit-btn {
+        width: 100%;
+        padding: 12px;
+        background: #6366f1;
+        border: none;
+        border-radius: 8px;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .google-mock-submit-btn:hover {
+        background: #4f46e5;
+        box-shadow: 0 0 12px rgba(99, 102, 241, 0.4);
+      }
+      .google-mock-divider {
+        height: 1px;
+        background: rgba(255,255,255,0.08);
+        margin: 20px 0;
+      }
+      .google-mock-instructions {
+        text-align: left;
+      }
+      .google-mock-toggle-btn {
+        background: transparent;
+        border: none;
+        color: #6366f1;
+        font-size: 0.85rem;
+        font-weight: 500;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        padding: 8px 0;
+        transition: all 0.2s;
+      }
+      .google-mock-toggle-btn:hover {
+        color: #f8fafc;
+      }
+      .google-mock-toggle-btn .toggle-arrow {
+        font-size: 0.75rem;
+        transition: transform 0.2s ease;
+        margin-left: 8px;
+      }
+      .google-mock-toggle-btn.active .toggle-arrow {
+        transform: rotate(180deg);
+      }
+      .google-mock-instructions-content {
+        margin-top: 10px;
+        max-height: 200px;
+        overflow-y: auto;
+        font-size: 0.8rem;
+        color: #94a3b8;
+        background: rgba(10, 15, 28, 0.4);
+        padding: 12px;
+        border-radius: 8px;
+        border: 1px solid rgba(255,255,255,0.05);
+      }
+      .google-mock-instructions-content p {
+        margin-bottom: 8px;
+        line-height: 1.4;
+      }
+      .google-mock-instructions-content pre {
+        background: rgba(0, 0, 0, 0.3);
+        padding: 8px;
+        border-radius: 4px;
+        overflow-x: auto;
+        margin-bottom: 8px;
+        color: #a7f3d0;
+        text-align: left;
+      }
+      .google-mock-instructions-content code {
+        font-family: monospace;
+      }
+      .google-mock-instructions-content .instruction-warning {
+        color: #fca5a5;
+        margin-bottom: 0;
+      }
+      .google-mock-instructions-content.hidden {
+        display: none;
+      }
+    `;
+    document.head.appendChild(styleEl);
   }
 
-  // Derive a name from the email
-  const namePart = trimmedEmail.split("@")[0];
-  const formattedName = namePart
-    .split(/[._-]/)
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
+  // Create the modal container
+  const modalOverlay = document.createElement("div");
+  modalOverlay.className = "google-mock-modal-overlay";
+  modalOverlay.innerHTML = `
+    <div class="google-mock-modal-container">
+      <div class="google-mock-modal-header">
+        <h3>Google Sign-In Fallback</h3>
+        <button class="google-mock-modal-close" id="googleMockCloseBtn">&times;</button>
+      </div>
+      <div class="google-mock-modal-body">
+        <p class="google-mock-intro">Firebase credentials are not configured yet on this environment. To test Google login under your email, please enter it below:</p>
+        
+        <div class="google-mock-form-group">
+          <label for="googleMockEmailInput">Clinician Email Address</label>
+          <input type="email" id="googleMockEmailInput" class="google-mock-input" placeholder="e.g. yourname@gmail.com" required>
+        </div>
+        
+        <div class="google-mock-action-row">
+          <button type="button" id="googleMockSubmitBtn" class="google-mock-submit-btn">Continue to Dashboard</button>
+        </div>
 
-  // Create a mock Firebase ID token containing the user-provided profile payload
-  const header = b64EncodeUnicode(JSON.stringify({ alg: "HS256", typ: "JWT" }));
-  const payload = b64EncodeUnicode(JSON.stringify({
-    sub: "mock-clinician-" + Math.floor(Math.random() * 100000),
-    email: trimmedEmail,
-    name: "Dr. " + formattedName,
-    email_verified: true
-  }));
-  const mockToken = `${header}.${payload}.mock-signature-hash`;
+        <div class="google-mock-divider"></div>
 
-  // Send mock token to Flask
-  fetch("/login/firebase", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ id_token: mockToken })
-  })
-  .then((response) => response.json())
-  .then((data) => {
-    if (data.status === "success") {
-      window.location.href = data.redirect;
-    } else {
-      showAuthError("Demo Login simulation failed.");
+        <div class="google-mock-instructions">
+          <button type="button" id="googleMockInstructionsToggleBtn" class="google-mock-toggle-btn">
+            <span>⚙️ Configure Real Google Sign-In</span>
+            <span class="toggle-arrow">▼</span>
+          </button>
+          <div id="googleMockInstructionsContentPanel" class="google-mock-instructions-content hidden">
+            <p>To enable the real Google Auth popup on Vercel, define these Environment Variables in your Vercel Project Settings:</p>
+            <pre><code>FIREBASE_API_KEY=your_key
+FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+FIREBASE_PROJECT_ID=your_project_id
+FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+FIREBASE_APP_ID=your_app_id</code></pre>
+            <p class="instruction-warning">Then add <strong>hepato-ai.vercel.app</strong> to "Authorized Domains" in your Firebase Auth Settings console.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(modalOverlay);
+
+  // Animate in
+  setTimeout(() => {
+    modalOverlay.classList.add("active");
+  }, 10);
+
+  const emailInput = document.getElementById("googleMockEmailInput");
+  const submitBtn = document.getElementById("googleMockSubmitBtn");
+  const closeBtn = document.getElementById("googleMockCloseBtn");
+  const toggleBtn = document.getElementById("googleMockInstructionsToggleBtn");
+  const panel = document.getElementById("googleMockInstructionsContentPanel");
+
+  emailInput.focus();
+
+  // Close helper
+  const closeModal = (reason = "cancelled") => {
+    modalOverlay.classList.remove("active");
+    setTimeout(() => {
+      modalOverlay.remove();
+    }, 250);
+    
+    if (reason === "cancelled") {
+      showAuthError("Google Sign-in was cancelled.");
       resetButtonState(btn);
     }
-  })
-  .catch((err) => {
-    console.error("Mock login server error:", err);
-    showAuthError("Failed to connect to the backend server.");
-    resetButtonState(btn);
+  };
+
+  // Close events
+  closeBtn.addEventListener("click", () => closeModal("cancelled"));
+  modalOverlay.addEventListener("click", (e) => {
+    if (e.target === modalOverlay) closeModal("cancelled");
+  });
+
+  // Toggle instructions
+  toggleBtn.addEventListener("click", () => {
+    toggleBtn.classList.toggle("active");
+    panel.classList.toggle("hidden");
+  });
+
+  // Handle enter key on input
+  emailInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      submitBtn.click();
+    }
+  });
+
+  // Handle submit
+  submitBtn.addEventListener("click", () => {
+    const userEmail = emailInput.value.trim();
+    if (!userEmail) {
+      alert("Email address cannot be empty.");
+      emailInput.focus();
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(userEmail)) {
+      alert("Please enter a valid email address.");
+      emailInput.focus();
+      return;
+    }
+
+    // Submit mock sign-in request
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = "Authenticating...";
+
+    const namePart = userEmail.split("@")[0];
+    const formattedName = namePart
+      .split(/[._-]/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+
+    const header = b64EncodeUnicode(JSON.stringify({ alg: "HS256", typ: "JWT" }));
+    const payload = b64EncodeUnicode(JSON.stringify({
+      sub: "mock-clinician-" + Math.floor(Math.random() * 100000),
+      email: userEmail,
+      name: "Dr. " + formattedName,
+      email_verified: true
+    }));
+    const mockToken = `${header}.${payload}.mock-signature-hash`;
+
+    fetch("/login/firebase", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ id_token: mockToken })
+    })
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.status === "success") {
+        window.location.href = data.redirect;
+      } else {
+        showAuthError("Demo Login simulation failed.");
+        closeModal("failed");
+      }
+    })
+    .catch((err) => {
+      console.error("Mock login server error:", err);
+      showAuthError("Failed to connect to the backend server.");
+      closeModal("failed");
+    });
   });
 }
 
