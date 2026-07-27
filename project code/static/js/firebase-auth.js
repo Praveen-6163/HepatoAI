@@ -67,7 +67,15 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch((error) => {
         console.error("Firebase Google Auth Error:", error);
-        showAuthError(error.message || "Google Authentication failed.");
+        
+        let displayMessage = error.message || "Google Authentication failed.";
+        
+        // Parse raw JSON CONFIGURATION_NOT_FOUND error from Firebase
+        if (displayMessage.includes("CONFIGURATION_NOT_FOUND")) {
+          displayMessage = "Google Sign-In is disabled in your Firebase project. To fix this, open your Firebase Console -> Go to Authentication -> Sign-in method -> Enable Google and select a support email.";
+        }
+        
+        showAuthError(displayMessage);
         resetButtonState(googleBtn);
       });
   });
