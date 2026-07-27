@@ -1484,16 +1484,24 @@ a:hover {
 @media (max-width: 1024px) {
   .auth-page-container {
     flex-direction: column;
-    margin: 30px 15px;
+    margin: 30px auto;
+    min-height: auto;
+    width: 90%;
   }
   .auth-branding-intro, .auth-card-wrapper {
     padding: 40px;
   }
   .analysis-page-layout {
     grid-template-columns: 1fr;
+    gap: 20px;
   }
   .analysis-reference-sidebar {
-    display: none;
+    display: block;
+    width: 100%;
+  }
+  .reference-card {
+    position: static;
+    margin-top: 20px;
   }
 }
 
@@ -1547,6 +1555,8 @@ a:hover {
   .filters-bar {
     flex-direction: column;
     align-items: stretch;
+    gap: 15px;
+    padding: 16px;
   }
   .filter-form {
     flex-direction: column;
@@ -1554,6 +1564,89 @@ a:hover {
   }
   .search-input-group, .filter-select-group {
     max-width: none;
+    width: 100%;
+  }
+  .filters-bar form {
+    width: 100%;
+  }
+  .filters-bar button {
+    width: 100%;
+  }
+
+  /* Responsive diagnostic report header */
+  .result-card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+  .print-action {
+    width: 100%;
+  }
+  .print-action .btn {
+    width: 100%;
+  }
+
+  /* Responsive diagnostic report footer buttons */
+  .result-card-footer-buttons {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .result-card-footer-buttons .btn {
+    width: 100%;
+  }
+
+  /* Lab parameters table overflow scroll wrapper */
+  .lab-parameters-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  .lab-table {
+    min-width: 550px;
+  }
+}
+
+@media (max-width: 576px) {
+  .auth-page-container {
+    width: 95%;
+    margin: 20px auto;
+  }
+  .auth-branding-intro, .auth-card-wrapper {
+    padding: 24px 16px;
+  }
+  .auth-brand-logo h1 {
+    font-size: 26px;
+  }
+  .auth-tagline {
+    margin-bottom: 24px;
+    font-size: 14px;
+  }
+  .auth-feature-bullets {
+    gap: 16px;
+  }
+  .feature-bullet {
+    gap: 12px;
+  }
+  .analysis-card {
+    padding: 20px;
+  }
+  .result-card {
+    padding: 20px;
+  }
+  .content-wrapper {
+    padding: 16px 12px;
+  }
+  .app-header {
+    padding: 0 16px;
+  }
+  
+  /* Stacking form buttons on mobile */
+  .form-actions {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .form-actions .btn {
     width: 100%;
   }
 }
