@@ -20,5 +20,5 @@ Thumbs.db
 # Credentials and Local Settings
 .env
 firebase-service-account.json
-firebase_config.json
+
 
