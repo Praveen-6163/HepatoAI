@@ -116,12 +116,46 @@ function setupFallbackMockHandler(btn) {
 
 // Simulates a Google Login locally when Firebase project keys are not yet configured by the user
 function simulateMockLogin(btn) {
-  // Create a mock Firebase ID token containing developer profile payload
+  // Prompt the user for their email address since Firebase keys are not configured yet
+  const userEmail = prompt(
+    "Firebase API keys are not configured.\n\nTo simulate Google Sign-in locally, please enter your email address below:"
+  );
+  
+  if (userEmail === null) {
+    // User cancelled the prompt
+    showAuthError("Google Sign-in was cancelled.");
+    resetButtonState(btn);
+    return;
+  }
+  
+  const trimmedEmail = userEmail.trim();
+  if (!trimmedEmail) {
+    showAuthError("Email address cannot be empty.");
+    resetButtonState(btn);
+    return;
+  }
+  
+  // Basic email pattern check
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(trimmedEmail)) {
+    showAuthError("Please enter a valid email address.");
+    resetButtonState(btn);
+    return;
+  }
+
+  // Derive a name from the email
+  const namePart = trimmedEmail.split("@")[0];
+  const formattedName = namePart
+    .split(/[._-]/)
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+  // Create a mock Firebase ID token containing the user-provided profile payload
   const header = b64EncodeUnicode(JSON.stringify({ alg: "HS256", typ: "JWT" }));
   const payload = b64EncodeUnicode(JSON.stringify({
-    sub: "mock-clinician-12345",
-    email: "clinician.demo@hepatoai.org",
-    name: "Dr. Demo Clinician",
+    sub: "mock-clinician-" + Math.floor(Math.random() * 100000),
+    email: trimmedEmail,
+    name: "Dr. " + formattedName,
     email_verified: true
   }));
   const mockToken = `${header}.${payload}.mock-signature-hash`;
@@ -140,7 +174,13 @@ function simulateMockLogin(btn) {
       window.location.href = data.redirect;
     } else {
       showAuthError("Demo Login simulation failed.");
+      resetButtonState(btn);
     }
+  })
+  .catch((err) => {
+    console.error("Mock login server error:", err);
+    showAuthError("Failed to connect to the backend server.");
+    resetButtonState(btn);
   });
 }
 
